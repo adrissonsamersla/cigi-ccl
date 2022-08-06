@@ -28,7 +28,7 @@ SET(VERSION 3.3.3)
 #
 #============================================================================
 
-#CMAKE_MINIMUM_REQUIRED(VERSION 2.4.7)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS 1)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 IF(MSVC OR MINGW)
