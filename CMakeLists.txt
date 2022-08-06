@@ -49,6 +49,8 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
     CONFIGURE_FILE(cigicl.pc.in_cmake cigicl.pc)
 ENDIF()
 
+OPTION(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
+
 #==========================================================
 # Tests
 #==========================================================
@@ -451,22 +453,26 @@ INCLUDE_DIRECTORIES(include)
 #
 # Compiling the CCL as a shared library
 #
-ADD_LIBRARY(cigicl-shared SHARED ${CCL_PUBLIC_HDRS} ${CCL_SRCS})
+IF(BUILD_SHARED_LIBS)
 
-IF(MSVC OR MINGW)
-    # Both the CCL_DLL and _CCL_EXPORTS_ defines are needed to export DLLs.
-    SET_TARGET_PROPERTIES(cigicl-shared PROPERTIES
-        COMPILE_FLAGS -DCCL_DLL
-        DEFINE_SYMBOL _CCL_EXPORTS_
-        )
+    ADD_LIBRARY(cigicl-shared SHARED ${CCL_PUBLIC_HDRS} ${CCL_SRCS})
+
+    IF(MSVC OR MINGW)
+        # Both the CCL_DLL and _CCL_EXPORTS_ defines are needed to export DLLs.
+        SET_TARGET_PROPERTIES(cigicl-shared PROPERTIES
+            COMPILE_FLAGS -DCCL_DLL
+            DEFINE_SYMBOL _CCL_EXPORTS_
+            )
+    ENDIF()
+
+    SET_TARGET_PROPERTIES(cigicl-shared PROPERTIES 
+        OUTPUT_NAME cigicl
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${VERSION}
+        SOVERSION 1
+    )
+
 ENDIF()
-
-SET_TARGET_PROPERTIES(cigicl-shared PROPERTIES 
-    OUTPUT_NAME cigicl
-    CLEAN_DIRECT_OUTPUT 1
-    VERSION ${VERSION}
-    SOVERSION 1
-)
 
 #
 # Compiling the CCL as a static library
@@ -484,10 +490,18 @@ SET_TARGET_PROPERTIES(cigicl-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 # Install
 #==========================================================
 
-INSTALL(TARGETS cigicl-static cigicl-shared
+INSTALL(TARGETS cigicl-static
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+
+IF(BUILD_SHARED_LIBS)
+    INSTALL(TARGETS cigicl-shared
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)
+ENDIF()
+
 INSTALL(FILES ${CCL_PUBLIC_HDRS} DESTINATION include/cigicl)
 INSTALL(FILES
     COPYING
